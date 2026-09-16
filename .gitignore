@@ -12,6 +12,7 @@ CMakeFiles/
 .idea/
 .vscode/*
 .vscode/settings.json
+.cache/
 
 .DS_Store
 Thumbs.db
