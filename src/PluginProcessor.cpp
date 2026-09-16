@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "juce_audio_formats/juce_audio_formats.h"
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -12,6 +13,11 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       ) {
+  formatManager.registerBasicFormats();
+
+  for (int i = 0; i < 8; ++i) {
+    synth.addVoice(new juce::SamplerVoice());
+  }
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {}
