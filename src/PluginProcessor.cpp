@@ -1,7 +1,10 @@
 #include "PluginProcessor.h"
+#include "BinaryData.h"
 #include "PluginEditor.h"
 #include "juce_audio_formats/juce_audio_formats.h"
 #include "juce_core/juce_core.h"
+#include "juce_graphics/juce_graphics.h"
+#include <BinaryData.h>
 #include <memory>
 
 //==============================================================================
@@ -23,9 +26,10 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
   }
 
   auto inputStream = std::make_unique<juce::MemoryInputStream>(
-      BinaryData::c5_wav, BinaryData::c5_wav, false);
+      BinaryData::c5_wav, BinaryData::c5_wavSize, false);
 
-  if (auto reader = formatManager.createReaderFor(std::move(inputStream))) {
+  if (const auto reader =
+          formatManager.createReaderFor(std::move(inputStream))) {
 
     const juce::String name = "C5";
 
@@ -39,15 +43,15 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
       midiNotes.setBit(note);
     }
 
-    const double attack = 0.0;
-    const double release = 0.1;
-    const double sampleLength = 10.0;
+    [[maybe_unused]] const double attack = 0.0;
+    [[maybe_unused]] const double release = 0.1;
+    [[maybe_unused]] const double sampleLength = 10.0;
 
     auto sound =
-        new juce::SampleSound(name, *reader, midiNotes, originalMidiNote,
-                              attack, release, sampleLength);
+        new juce::SamplerSound(name, *reader, midiNotes, originalMidiNote,
+                               attack, release, sampleLength);
 
-    midiPlaybackEngine.addSound(sound);
+    synth.addSound(sound);
   };
 }
 
@@ -111,7 +115,7 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate,
                                               int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
-  synth.setCurrentPlaybackSampleRate(double sampleRate);
+  synth.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources() {
