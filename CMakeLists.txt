@@ -27,8 +27,10 @@ juce_add_plugin(roze
 
 
 target_sources(roze PRIVATE
+    src/PluginEditor.cpp
+    src/PluginEditor.h
     src/PluginProcessor.cpp
-    src/PluginEditor.cpp)
+    src/PluginProcessor.h)
 
 target_compile_definitions(roze PUBLIC
     JUCE_WEB_BROWSER=0
@@ -38,6 +40,7 @@ target_compile_definitions(roze PUBLIC
 target_link_libraries(roze
     PRIVATE
         juce::juce_audio_utils
+        juce::juce_audio_basics
         juce::juce_dsp
     PUBLIC
         juce::juce_recommended_config_flags
