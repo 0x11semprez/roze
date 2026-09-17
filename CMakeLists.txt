@@ -37,8 +37,11 @@ target_compile_definitions(roze PUBLIC
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
+juce_add_binary_data(rozeData SOURCES sample/f_major.wav)
+
 target_link_libraries(roze
     PRIVATE
+    rozeData
         juce::juce_audio_utils
         juce::juce_audio_basics
         juce::juce_dsp
