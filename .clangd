@@ -1,0 +1,28 @@
+# clangd : projet JUCE (genere par <leader>raf)
+CompileFlags:
+  # cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+  CompilationDatabase: build
+  # NB: ~/.config/clangd/config.yaml est applique APRES ce fichier et ajoute
+  # -std=c++23 : clangd analyse en C++23 alors que CMake compile en C++17.
+  # JUCE 8 s'en accommode ; ne pas s'appuyer sur des features > C++17.
+Completion:
+  # Les modules JUCE sont des headers parapluie : ne jamais inserer
+  # automatiquement un header interne (juce_core/xxx/juce_Yyy.h).
+  HeaderInsertion: Never
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
+  ClangTidy:
+    Remove:
+      - misc-include-cleaner
+      - modernize-use-nodiscard
+      - readability-identifier-naming
+---
+# Le code de JUCE lui-meme : ni clang-tidy, ni diagnostics
+If:
+  PathMatch: .*/(_deps/juce-src|JUCE|juce)/.*
+Diagnostics:
+  Suppress: "*"
+  ClangTidy:
+    Remove: "*"
+
