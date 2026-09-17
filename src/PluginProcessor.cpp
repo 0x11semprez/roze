@@ -26,12 +26,12 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
   }
 
   auto inputStream = std::make_unique<juce::MemoryInputStream>(
-      BinaryData::c5_wav, BinaryData::c5_wavSize, false);
+      BinaryData::f_major_wav, BinaryData::f_major_wavSize, false);
 
   if (const auto reader =
           formatManager.createReaderFor(std::move(inputStream))) {
 
-    const juce::String name = "C5";
+    const juce::String name = "F_major";
 
     int originalMidiNote = 60;
 
