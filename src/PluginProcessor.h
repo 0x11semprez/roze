@@ -1,6 +1,8 @@
 #pragma once
 
-#include <juce_audio_utils/juce_audio_utils.h>
+#include <juce_audio_basics/juce_audio_basics.h>
+#include <juce_audio_formats/juce_audio_formats.h>
+#include <juce_audio_processors/juce_audio_processors.h>
 
 //==============================================================================
 class AudioPluginAudioProcessor final : public juce::AudioProcessor {
@@ -44,8 +46,10 @@ public:
   void loadSample(const juce::File& file);
 
 private:
+  static constexpr auto numVoices = 8;
   juce::Synthesiser synth;
   juce::AudioFormatManager formatManager;
+
   //==============================================================================
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };

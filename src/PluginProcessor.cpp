@@ -1,6 +1,8 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "juce_audio_formats/juce_audio_formats.h"
+#include "juce_core/juce_core.h"
+#include <memory>
 
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -13,11 +15,40 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
       ) {
+
   formatManager.registerBasicFormats();
 
-  for (int i = 0; i < 8; ++i) {
+  for (int i = 0; i < numVoices; ++i) {
     synth.addVoice(new juce::SamplerVoice());
   }
+
+  auto inputStream = std::make_unique<juce::MemoryInputStream>(
+      BinaryData::c5_wav, BinaryData::c5_wav, false);
+
+  if (auto reader = formatManager.createReaderFor(std::move(inputStream))) {
+
+    const juce::String name = "C5";
+
+    int originalMidiNote = 60;
+
+    std::vector<int> midiNoteSet{60, 61, 62, 63, 64, 65, 66, 67};
+
+    juce::BigInteger midiNotes;
+
+    for (auto note : midiNoteSet) {
+      midiNotes.setBit(note);
+    }
+
+    const double attack = 0.0;
+    const double release = 0.1;
+    const double sampleLength = 10.0;
+
+    auto sound =
+        new juce::SampleSound(name, *reader, midiNotes, originalMidiNote,
+                              attack, release, sampleLength);
+
+    midiPlaybackEngine.addSound(sound);
+  };
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {}
@@ -80,7 +111,7 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate,
                                               int samplesPerBlock) {
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
-  juce::ignoreUnused(sampleRate, samplesPerBlock);
+  synth.setCurrentPlaybackSampleRate(double sampleRate);
 }
 
 void AudioPluginAudioProcessor::releaseResources() {
@@ -114,7 +145,6 @@ bool AudioPluginAudioProcessor::isBusesLayoutSupported(
 
 void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                              juce::MidiBuffer& midiMessages) {
-  juce::ignoreUnused(midiMessages);
 
   juce::ScopedNoDenormals noDenormals;
   auto totalNumInputChannels = getTotalNumInputChannels();
@@ -140,6 +170,8 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     juce::ignoreUnused(channelData);
     // ..do something to the data...
   }
+
+  synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 
 //==============================================================================
