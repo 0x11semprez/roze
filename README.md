@@ -14,7 +14,6 @@ cmake -B build && cmake --build build
 ```
 
 röze workflow <br/>
-<br/>
 röze is not only a plugin: the `roze` command drives the full pipeline, from building the VST to managing your sample library, without leaving the terminal. <br/>
 
 ```bash
