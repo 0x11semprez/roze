@@ -1,6 +1,11 @@
 #include "RozeAudioRegistry.hpp"
 
-[[nodiscard]] string_view isSuppored(const string_view& format)
+[[nodiscard]] int allFormatsSupportbyRoze() const noexcept
+{
+    return RozeAudioRegistry::allFormats.size();
+}
+
+[[nodiscard]] string_view isSupported(const string_view& format)
 {
     for (const auto& f : RozeAudioRegistry::allFormats) {
         if (format != f) [[unlikely]] {
