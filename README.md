@@ -5,7 +5,4 @@ röze supports its own sampling engine, built from scratch (`engine/`). <br/>
 röze supports 47 audio formats out of the box, with automatic format detection.<br/>
 röze supports loading, mapping and playing your sounds straight from your DAW. <br/>
 <br/>
-röze will start with -> 
-```bash
-cmake -B build && cmake --build build
-```
+röze will start with ```bash cmake -B build && cmake --build build ```
