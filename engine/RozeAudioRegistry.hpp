@@ -2,6 +2,8 @@
 #include <array>
 #include <string_view>
 
+#include "errors/RozeAudioRegistryErrors.hpp"
+
 using namespace std;
 
 class RozeAudioRegistry {
@@ -16,5 +18,16 @@ class RozeAudioRegistry {
     [[nodiscard]] int allFormatsSupportbyRoze() const noexcept
     {
         return allFormats.size();
+    }
+
+    [[nodiscard]] string_view isSuppored(const string_view& format)
+    {
+        for (const auto& f : allFormats) {
+            if (format != f) [[unlikely]] {
+                return errorMessage(RozeAudioRegistryErrors::FormatIsNotSupported);
+            }
+
+            return "roze support your format.";
+        }
     }
 };
