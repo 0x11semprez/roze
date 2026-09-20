@@ -2,7 +2,7 @@
 #include <array>
 #include <string_view>
 
-#include "errors/RozeAudioRegistryErrors.hpp"
+#include "RozeAudioRegistryErrors.hpp"
 
 using namespace std;
 
@@ -16,5 +16,5 @@ class RozeAudioRegistry {
         ".vox",  ".wav",    ".wma", ".wv",   ".webm", ".8svx",  ".cda"};
 
     [[nodiscard]] static inline int allFormatsSupportbyRoze() noexcept;
-    [[nodiscard]] string_view isSuppored(const string_view& format);
+    [[nodiscard]] string_view isSuppored(const string_view format);
 };

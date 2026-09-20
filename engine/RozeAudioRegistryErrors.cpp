@@ -1,4 +1,4 @@
-#include "RozeAudioRegistryErrors.hpp"
+#include "interface/RozeAudioRegistryErrors.hpp"
 
 #include <string_view>
 
