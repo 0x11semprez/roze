@@ -1,6 +1,6 @@
 #include "RozeAudioRegistry.hpp"
 
-[[nodiscard]] int allFormatsSupportbyRoze() const noexcept
+[[nodiscard]] int allFormatsSupportbyRoze() noexcept
 {
     return RozeAudioRegistry::allFormats.size();
 }

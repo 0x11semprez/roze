@@ -15,19 +15,6 @@ class RozeAudioRegistry {
         ".mogg", ".opus",   ".qoa", ".ra",   ".rm",   ".raw",   ".rf64", ".sln", ".tta", ".voc",
         ".vox",  ".wav",    ".wma", ".wv",   ".webm", ".8svx",  ".cda"};
 
-    [[nodiscard]] int allFormatsSupportbyRoze() const noexcept
-    {
-        return allFormats.size();
-    }
-
-    [[nodiscard]] string_view isSuppored(const string_view& format)
-    {
-        for (const auto& f : allFormats) {
-            if (format != f) [[unlikely]] {
-                return errorMessage(RozeAudioRegistryErrors::FormatIsNotSupported);
-            }
-
-            return "roze support your format.";
-        }
-    }
+    [[nodiscard]] static inline int allFormatsSupportbyRoze() noexcept;
+    [[nodiscard]] string_view isSuppored(const string_view& format);
 };
