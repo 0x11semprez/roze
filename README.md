@@ -8,15 +8,15 @@ röze ships with its own command line tool, written in Go (`cmd/roze/`), so the 
 <br/>
 
 röze build <br/>
-<br/>
+
 ```bash
 cmake -B build && cmake --build build
 ```
-<br/>
+
 röze workflow <br/>
 <br/>
 röze is not only a plugin: the `roze` command drives the full pipeline, from building the VST to managing your sample library, without leaving the terminal. <br/>
-<br/>
+
 ```bash
 roze build              # configure & build the VST3 and the Standalone
 roze install            # copy the VST3 into your plugin folder (~/.vst3)
@@ -25,4 +25,3 @@ roze formats            # list the 47 formats supported by the engine
 roze scan <dir>         # detect the format of every file in a sample folder
 roze map <dir>          # build a keymap from a sample folder, ready to load in the plugin
 ```
-
