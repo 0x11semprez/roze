@@ -187,6 +187,9 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         // ..do something to the data...
     }
 
+    // Merge notes played on the editor keyboard (mouse / QWERTY) into the host MIDI.
+    keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), true);
+
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
 }
 

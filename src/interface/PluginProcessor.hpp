@@ -45,10 +45,13 @@ class AudioPluginAudioProcessor final : public juce::AudioProcessor {
 
     void loadSample(const juce::File& file);
 
+    juce::MidiKeyboardState& getKeyboardState() noexcept { return keyboardState; }
+
     private:
     static constexpr auto numVoices = 8;
     juce::Synthesiser synth;
     juce::AudioFormatManager formatManager;
+    juce::MidiKeyboardState keyboardState;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
