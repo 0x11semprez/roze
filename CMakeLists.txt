@@ -30,14 +30,17 @@ target_sources(roze PRIVATE
     src/PluginEditor.cpp
     src/interface/PluginEditor.hpp
     src/PluginProcessor.cpp
-    src/interface/PluginProcessor.hpp)
+    src/interface/PluginProcessor.hpp
+    src/RozeLookAndFeel.cpp
+    src/interface/RozeLookAndFeel.hpp)
 
 target_compile_definitions(roze PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-juce_add_binary_data(rozeData SOURCES sample/f_major.wav)
+juce_add_binary_data(rozeData SOURCES sample/f_major.wav docs/logo.png
+    assets/fonts/Sora-Regular.ttf assets/fonts/Sora-SemiBold.ttf)
 
 target_link_libraries(roze
     PRIVATE
