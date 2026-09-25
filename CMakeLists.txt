@@ -32,7 +32,9 @@ target_sources(roze PRIVATE
     src/PluginProcessor.cpp
     src/interface/PluginProcessor.hpp
     src/RozeLookAndFeel.cpp
-    src/interface/RozeLookAndFeel.hpp)
+    src/interface/RozeLookAndFeel.hpp
+    src/NoteDisplay.cpp
+    src/interface/NoteDisplay.hpp)
 
 target_compile_definitions(roze PUBLIC
     JUCE_WEB_BROWSER=0
