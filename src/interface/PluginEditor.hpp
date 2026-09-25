@@ -34,6 +34,10 @@ class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor 
     // Played notes drawing themselves in the centre panel.
     NoteDisplay noteDisplay;
 
+    // Pitch in semitones. UI only for now, not connected to the processor yet.
+    juce::Slider pitchKnob;
+    juce::Label pitchLabel;
+
     juce::Rectangle<int> headerArea;
     juce::Rectangle<int> centreArea;
 

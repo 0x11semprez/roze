@@ -10,6 +10,7 @@ namespace Colours = RozeColours;
 
 constexpr int headerHeight = 56;
 constexpr int keyboardHeight = 80;
+constexpr int controlsHeight = 110;
 constexpr int margin = 12;
 }  // namespace
 
@@ -38,6 +39,22 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
                        juce::Colours::transparentBlack);
     addAndMakeVisible(keyboard);
     addAndMakeVisible(noteDisplay);
+
+    pitchKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    pitchKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    pitchKnob.setRange(-24.0, 24.0, 1.0);
+    pitchKnob.setValue(0.0, juce::dontSendNotification);
+    pitchKnob.setDoubleClickReturnValue(true, 0.0);
+    pitchKnob.setTextValueSuffix(" st");
+    pitchKnob.getProperties().set(RozeLookAndFeel::bipolarProperty, true);
+    pitchKnob.setWantsKeyboardFocus(false);  // keep QWERTY notes going to the keyboard
+    addAndMakeVisible(pitchKnob);
+
+    pitchLabel.setText("PITCH", juce::dontSendNotification);
+    pitchLabel.setJustificationType(juce::Justification::centred);
+    pitchLabel.setColour(juce::Label::textColourId, Colours::pink);
+    pitchLabel.setFont(juce::FontOptions(13.0f, juce::Font::bold));
+    addAndMakeVisible(pitchLabel);
 
     setResizable(true, true);
     setResizeLimits(baseWidth * 3 / 4, baseHeight * 3 / 4, baseWidth * 2, baseHeight * 2);
@@ -91,6 +108,12 @@ void AudioPluginAudioProcessorEditor::resized()
     keyboard.setLowestVisibleKey(24);
 
     bounds.reduce(scaled(margin), scaled(margin));
+
+    // Controls row under the centre panel: pitch on the left, right side kept for later.
+    auto controlsArea = bounds.removeFromBottom(scaled(controlsHeight));
+    auto pitchArea = controlsArea.removeFromLeft(scaled(90));
+    pitchLabel.setBounds(pitchArea.removeFromTop(scaled(20)));
+    pitchKnob.setBounds(pitchArea);
 
     centreArea = bounds.withTrimmedBottom(scaled(margin));
     noteDisplay.setBounds(centreArea.reduced(scaled(margin)));
