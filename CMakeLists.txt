@@ -28,9 +28,9 @@ juce_add_plugin(roze
 
 target_sources(roze PRIVATE
     src/PluginEditor.cpp
-    src/PluginEditor.h
+    src/interface/PluginEditor.hpp
     src/PluginProcessor.cpp
-    src/PluginProcessor.h)
+    src/interface/PluginProcessor.hpp)
 
 target_compile_definitions(roze PUBLIC
     JUCE_WEB_BROWSER=0

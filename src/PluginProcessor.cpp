@@ -1,11 +1,11 @@
-#include "PluginProcessor.h"
+#include "interface/PluginProcessor.hpp"
 
 #include <BinaryData.h>
 
 #include <memory>
 
 #include "BinaryData.h"
-#include "PluginEditor.h"
+#include "interface/PluginEditor.hpp"
 #include "juce_audio_formats/juce_audio_formats.h"
 #include "juce_core/juce_core.h"
 #include "juce_graphics/juce_graphics.h"

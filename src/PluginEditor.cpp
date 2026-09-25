@@ -1,5 +1,5 @@
-#include "PluginEditor.h"
-#include "PluginProcessor.h"
+#include "interface/PluginEditor.hpp"
+#include "interface/PluginProcessor.hpp"
 #include "juce_graphics/juce_graphics.h"
 
 //==============================================================================

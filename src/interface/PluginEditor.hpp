@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PluginProcessor.h"
+#include "PluginProcessor.hpp"
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final
