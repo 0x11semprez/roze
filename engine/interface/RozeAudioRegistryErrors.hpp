@@ -7,4 +7,4 @@ enum class RozeAudioRegistryErrors {
     FormatIsNotSupported,
 };
 
-string_view errorMessage(RozeAudioRegistryErrors error) {}
+string_view errorMessage(RozeAudioRegistryErrors error);
