@@ -1,8 +1,14 @@
-#include "interface/RozeAudioRegistryErrors.hpp"
+module;
 
 #include <string_view>
 
-string_view errorMessage(RozeAudioRegistryErrors error)
+export module roze.registry.errors;
+
+export enum class RozeAudioRegistryErrors {
+    FormatIsNotSupported,
+};
+
+export std::string_view errorMessage(RozeAudioRegistryErrors error)
 {
     switch (error) {
         case RozeAudioRegistryErrors::FormatIsNotSupported:
