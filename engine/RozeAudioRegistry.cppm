@@ -132,6 +132,26 @@ constexpr Layout layouts[]{
      .sampleRate = constant(44100),
      .numChannels = constant(2),
      .bitDepth = constant(16)},
+    // .aiff  "FORM" 0, "AIFF" or "AIFC" 8, chunk "COMM": channels +8, bits +14, rate +16 (80-bit)
+    {.extension = ".aiff",
+     .checks = {{{0, "FORM"}, {8, "AIFF"}}},
+     .anchor = "COMM",
+     .sampleRate = {.read = Read::Extended80, .offset = 16},
+     .numChannels = {.read = Read::Be16, .offset = 8},
+     .bitDepth = {.read = Read::Be16, .offset = 14}},
+    {.extension = ".aiff",
+     .checks = {{{0, "FORM"}, {8, "AIFC"}}},
+     .anchor = "COMM",
+     .sampleRate = {.read = Read::Extended80, .offset = 16},
+     .numChannels = {.read = Read::Be16, .offset = 8},
+     .bitDepth = {.read = Read::Be16, .offset = 14}},
+    // .8svx  "FORM" 0, "8SVX" 8, chunk "VHDR": rate +20, mono 8-bit
+    {.extension = ".8svx",
+     .checks = {{{0, "FORM"}, {8, "8SVX"}}},
+     .anchor = "VHDR",
+     .sampleRate = {.read = Read::Be16, .offset = 20},
+     .numChannels = constant(1),
+     .bitDepth = constant(8)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
