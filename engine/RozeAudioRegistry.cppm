@@ -120,6 +120,18 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Le32, .offset = 12},
      .numChannels = {.read = Read::Le16, .offset = 10},
      .bitDepth = {.read = Read::Le16, .offset = 22}},
+    // .act  "RIFF" 0, "WAVE" 8, 0x84 at 256, rate 24, G.729 mono
+    {.extension = ".act",
+     .checks = {{{0, "RIFF"}, {8, "WAVE"}, {256, "\x84"}}},
+     .sampleRate = {.read = Read::Le32, .offset = 24},
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    // .cda  "RIFF" 0, "CDDA" 8: CD track shortcut, always 44100 Hz stereo 16-bit
+    {.extension = ".cda",
+     .checks = {{{0, "RIFF"}, {8, "CDDA"}}},
+     .sampleRate = constant(44100),
+     .numChannels = constant(2),
+     .bitDepth = constant(16)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
