@@ -159,6 +159,12 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Be32, .offset = 16},
      .numChannels = {.read = Read::Be32, .offset = 20},
      .bitDepth = {.read = Read::Be32, .offset = 12, .table = auBits}},
+    // .flac  "fLaC", STREAMINFO at +8: rate 20 bits at +18, channels-1 3 bits at +20, bits-1 5 bits
+    {.extension = ".flac",
+     .anchor = "fLaC",
+     .sampleRate = {.read = Read::Be24, .offset = 18, .shift = 4, .mask = 0xFFFFF},
+     .numChannels = {.read = Read::Byte, .offset = 20, .shift = 1, .mask = 0x7, .add = 1},
+     .bitDepth = {.read = Read::Be16, .offset = 20, .shift = 4, .mask = 0x1F, .add = 1}},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
