@@ -95,6 +95,7 @@ struct Layout {
     Field bitDepth{};
 };
 
+constexpr array<uint32_t, 8> auBits{0, 0, 8, 16, 24, 32, 32, 64};  // encoding 1 = mu-law
 
 constexpr Field constant(uint32_t value)
 {
@@ -152,6 +153,12 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Be16, .offset = 20},
      .numChannels = constant(1),
      .bitDepth = constant(8)},
+    // .au  ".snd" 0, encoding 12, rate 16, channels 20
+    {.extension = ".au",
+     .checks = {{{0, ".snd"}}},
+     .sampleRate = {.read = Read::Be32, .offset = 16},
+     .numChannels = {.read = Read::Be32, .offset = 20},
+     .bitDepth = {.read = Read::Be32, .offset = 12, .table = auBits}},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
