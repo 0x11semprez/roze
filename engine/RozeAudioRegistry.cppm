@@ -99,6 +99,8 @@ constexpr array<uint32_t, 3> mpeg1Rates{44100, 48000, 32000};
 constexpr array<uint32_t, 3> mpeg2Rates{22050, 24000, 16000};
 constexpr array<uint32_t, 3> mpeg25Rates{11025, 12000, 8000};
 constexpr array<uint32_t, 4> mpegChannels{2, 2, 2, 1};  // channel mode 3 = mono
+constexpr array<uint32_t, 13> aacRates{96000, 88200, 64000, 48000, 44100, 32000, 24000,
+                                       22050, 16000, 12000, 11025, 8000,  7350};
 constexpr array<uint32_t, 8> auBits{0, 0, 8, 16, 24, 32, 32, 64};  // encoding 1 = mu-law
 
 constexpr Field constant(uint32_t value)
@@ -265,6 +267,13 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg25Rates},
      .numChannels =
          {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    // .aac  ADTS frame FFF, rate index byte 2 bits 2-5, channels byte 2 bit 0 + byte 3 bits 6-7
+    {.extension = ".aac",
+     .anchor = "\xFF\xF0",
+     .anchorMask = "\xFF\xF6",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0xF, .table = aacRates},
+     .numChannels = {.read = Read::Be16, .offset = 2, .shift = 6, .mask = 0x7},
      .bitDepth = constant(0)},
 };
 
