@@ -95,6 +95,10 @@ struct Layout {
     Field bitDepth{};
 };
 
+constexpr array<uint32_t, 3> mpeg1Rates{44100, 48000, 32000};
+constexpr array<uint32_t, 3> mpeg2Rates{22050, 24000, 16000};
+constexpr array<uint32_t, 3> mpeg25Rates{11025, 12000, 8000};
+constexpr array<uint32_t, 4> mpegChannels{2, 2, 2, 1};  // channel mode 3 = mono
 constexpr array<uint32_t, 8> auBits{0, 0, 8, 16, 24, 32, 32, 64};  // encoding 1 = mu-law
 
 constexpr Field constant(uint32_t value)
@@ -210,6 +214,57 @@ constexpr Layout layouts[]{
      .anchor = "\x01vorbis",
      .sampleRate = {.read = Read::Le32, .offset = 12},
      .numChannels = {.read = Read::Byte, .offset = 11},
+     .bitDepth = constant(0)},
+    // .mp1 .mp2 .mp3  frame: FF, byte 1 = 111 + version (2 bits) + layer (2 bits) + 1 bit,
+    // rate index byte 2 bits 2-3, channel mode byte 3 bits 6-7. One layout per MPEG version.
+    {.extension = ".mp1",
+     .anchor = "\xFF\xFE",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg1Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    {.extension = ".mp1",
+     .anchor = "\xFF\xF6",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg2Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    {.extension = ".mp2",
+     .anchor = "\xFF\xFC",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg1Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    {.extension = ".mp2",
+     .anchor = "\xFF\xF4",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg2Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    {.extension = ".mp3",
+     .anchor = "\xFF\xFA",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg1Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    {.extension = ".mp3",
+     .anchor = "\xFF\xF2",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg2Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
+     .bitDepth = constant(0)},
+    {.extension = ".mp3",
+     .anchor = "\xFF\xE2",
+     .anchorMask = "\xFF\xFE",
+     .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0x3, .table = mpeg25Rates},
+     .numChannels =
+         {.read = Read::Byte, .offset = 3, .shift = 6, .mask = 0x3, .table = mpegChannels},
      .bitDepth = constant(0)},
 };
 
