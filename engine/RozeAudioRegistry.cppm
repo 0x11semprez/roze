@@ -108,6 +108,11 @@ constexpr Field constant(uint32_t value)
     return {.read = Read::Constant, .value = value};
 }
 
+// MP4 (.3gp .aax .alac .m4a .m4b .m4p): offsets from the "stsd" box type to its first entry.
+constexpr uint32_t mp4Channels = 36;
+constexpr uint32_t mp4SampleSize = 38;
+constexpr uint32_t mp4SampleRate = 44;
+
 // Sources: FFmpeg libavformat demuxers (wavdec, aiffdec, flacdec, oggparse*, mov, matroskadec,
 // asfdec, rmdec, aadec, act, dss, mmf, vocdec, wvdec, ape, tta, mpc, qoadec, amr, au) and the
 // specs: WAVE (Microsoft), AIFF 1.3 (Apple), FLAC (RFC 9639), ISO 14496-12 (MP4),
@@ -275,6 +280,43 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Byte, .offset = 2, .shift = 2, .mask = 0xF, .table = aacRates},
      .numChannels = {.read = Read::Be16, .offset = 2, .shift = 6, .mask = 0x7},
      .bitDepth = constant(0)},
+    // MP4  "ftyp" 4, box "stsd": channels +36, sample size +38, rate +44
+    {.extension = ".m4a",
+     .checks = {{{4, "ftyp"}}},
+     .anchor = "stsd",
+     .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
+     .numChannels = {.read = Read::Be16, .offset = mp4Channels},
+     .bitDepth = constant(0)},
+    {.extension = ".m4b",
+     .checks = {{{4, "ftyp"}}},
+     .anchor = "stsd",
+     .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
+     .numChannels = {.read = Read::Be16, .offset = mp4Channels},
+     .bitDepth = constant(0)},
+    {.extension = ".m4p",
+     .checks = {{{4, "ftyp"}}},
+     .anchor = "stsd",
+     .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
+     .numChannels = {.read = Read::Be16, .offset = mp4Channels},
+     .bitDepth = constant(0)},
+    {.extension = ".aax",
+     .checks = {{{4, "ftyp"}}},
+     .anchor = "stsd",
+     .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
+     .numChannels = {.read = Read::Be16, .offset = mp4Channels},
+     .bitDepth = constant(0)},
+    {.extension = ".3gp",
+     .checks = {{{4, "ftyp"}}},
+     .anchor = "stsd",
+     .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
+     .numChannels = {.read = Read::Be16, .offset = mp4Channels},
+     .bitDepth = constant(0)},
+    {.extension = ".alac",
+     .checks = {{{4, "ftyp"}}},
+     .anchor = "stsd",
+     .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
+     .numChannels = {.read = Read::Be16, .offset = mp4Channels},
+     .bitDepth = {.read = Read::Be16, .offset = mp4SampleSize}},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
