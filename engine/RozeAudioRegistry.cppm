@@ -372,6 +372,25 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Be16, .offset = 54},
      .numChannels = {.read = Read::Be16, .offset = 60},
      .bitDepth = constant(0)},
+    // .aa  magic 57907536 at 4, dictionary value of "codec": mp332, acelp85 or acelp16
+    {.extension = ".aa",
+     .checks = {{{4, "\x57\x90\x75\x36"}}},
+     .anchor = "mp332",
+     .sampleRate = constant(22050),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    {.extension = ".aa",
+     .checks = {{{4, "\x57\x90\x75\x36"}}},
+     .anchor = "acelp85",
+     .sampleRate = constant(8500),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    {.extension = ".aa",
+     .checks = {{{4, "\x57\x90\x75\x36"}}},
+     .anchor = "acelp16",
+     .sampleRate = constant(16000),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
