@@ -330,6 +330,13 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::FloatBe32, .offset = 2},
      .numChannels = {.read = Read::Byte, .offset = 2, .anchor = "\x9F\x81"},
      .bitDepth = constant(0)},
+    // .wma  ASF header GUID 0, audio stream GUID: channels +56, rate +58
+    {.extension = ".wma",
+     .checks = {{{0, "\x30\x26\xB2\x75\x8E\x66\xCF\x11\xA6\xD9\x00\xAA\x00\x62\xCE\x6C"sv}}},
+     .anchor = "\x40\x9E\x69\xF8\x4D\x5B\xCF\x11\xA8\xFD\x00\x80\x5F\x5C\x44\x2B"sv,
+     .sampleRate = {.read = Read::Le32, .offset = 58},
+     .numChannels = {.read = Read::Le16, .offset = 56},
+     .bitDepth = constant(0)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
