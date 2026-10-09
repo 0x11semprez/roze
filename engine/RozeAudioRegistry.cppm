@@ -317,6 +317,19 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Be16, .offset = mp4SampleRate},
      .numChannels = {.read = Read::Be16, .offset = mp4Channels},
      .bitDepth = {.read = Read::Be16, .offset = mp4SampleSize}},
+    // .webm  EBML 1A45DFA3 0, element B5 = rate (float, 8 or 4 bytes), element 9F = channels
+    {.extension = ".webm",
+     .checks = {{{0, "\x1A\x45\xDF\xA3"}}},
+     .anchor = "\xB5\x88",
+     .sampleRate = {.read = Read::FloatBe64, .offset = 2},
+     .numChannels = {.read = Read::Byte, .offset = 2, .anchor = "\x9F\x81"},
+     .bitDepth = constant(0)},
+    {.extension = ".webm",
+     .checks = {{{0, "\x1A\x45\xDF\xA3"}}},
+     .anchor = "\xB5\x84",
+     .sampleRate = {.read = Read::FloatBe32, .offset = 2},
+     .numChannels = {.read = Read::Byte, .offset = 2, .anchor = "\x9F\x81"},
+     .bitDepth = constant(0)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
