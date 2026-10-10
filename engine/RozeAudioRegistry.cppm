@@ -391,6 +391,17 @@ constexpr Layout layouts[]{
      .sampleRate = constant(16000),
      .numChannels = constant(1),
      .bitDepth = constant(0)},
+    // .amr  "#!AMR\n" 0: 8000 Hz mono.  .awb  "#!AMR-WB\n" 0: 16000 Hz mono
+    {.extension = ".amr",
+     .checks = {{{0, "#!AMR\n"}}},
+     .sampleRate = constant(8000),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    {.extension = ".awb",
+     .checks = {{{0, "#!AMR-WB\n"}}},
+     .sampleRate = constant(16000),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
