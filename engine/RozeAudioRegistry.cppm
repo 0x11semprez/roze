@@ -101,6 +101,11 @@ constexpr array<uint32_t, 3> mpeg25Rates{11025, 12000, 8000};
 constexpr array<uint32_t, 4> mpegChannels{2, 2, 2, 1};  // channel mode 3 = mono
 constexpr array<uint32_t, 13> aacRates{96000, 88200, 64000, 48000, 44100, 32000, 24000,
                                        22050, 16000, 12000, 11025, 8000,  7350};
+constexpr array<uint32_t, 15> wavPackRates{6000,  8000,  9600,  11025, 12000, 16000, 22050, 24000,
+                                           32000, 44100, 48000, 64000, 88200, 96000, 192000};
+constexpr array<uint32_t, 2> wavPackChannels{2, 1};  // mono flag
+constexpr array<uint32_t, 4> wavPackBits{8, 16, 24, 32};
+constexpr array<uint32_t, 4> musepackRates{44100, 48000, 37800, 32000};
 constexpr array<uint32_t, 8> auBits{0, 0, 8, 16, 24, 32, 32, 64};  // encoding 1 = mu-law
 
 constexpr Field constant(uint32_t value)
@@ -414,6 +419,20 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Le32, .offset = 10},
      .numChannels = {.read = Read::Le16, .offset = 6},
      .bitDepth = {.read = Read::Le16, .offset = 8}},
+    // .wv  "wvpk", flags +24: bytes per sample bits 0-1, mono bit 2, rate index bits 23-26
+    {.extension = ".wv",
+     .anchor = "wvpk",
+     .sampleRate =
+         {.read = Read::Le32, .offset = 24, .shift = 23, .mask = 0xF, .table = wavPackRates},
+     .numChannels =
+         {.read = Read::Le32, .offset = 24, .shift = 2, .mask = 0x1, .table = wavPackChannels},
+     .bitDepth = {.read = Read::Le32, .offset = 24, .mask = 0x3, .table = wavPackBits}},
+    // .mpc  "MP+" (Musepack SV7): rate index +10 bits 0-1, always stereo
+    {.extension = ".mpc",
+     .anchor = "MP+",
+     .sampleRate = {.read = Read::Byte, .offset = 10, .mask = 0x3, .table = musepackRates},
+     .numChannels = constant(2),
+     .bitDepth = constant(0)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
