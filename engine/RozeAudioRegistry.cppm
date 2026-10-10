@@ -402,6 +402,18 @@ constexpr Layout layouts[]{
      .sampleRate = constant(16000),
      .numChannels = constant(1),
      .bitDepth = constant(0)},
+    // .ape  "MAC ", header after the 52-byte descriptor: bits +68, channels +70, rate +72
+    {.extension = ".ape",
+     .anchor = "MAC ",
+     .sampleRate = {.read = Read::Le32, .offset = 72},
+     .numChannels = {.read = Read::Le16, .offset = 70},
+     .bitDepth = {.read = Read::Le16, .offset = 68}},
+    // .tta  "TTA1": channels +6, bits +8, rate +10
+    {.extension = ".tta",
+     .anchor = "TTA1",
+     .sampleRate = {.read = Read::Le32, .offset = 10},
+     .numChannels = {.read = Read::Le16, .offset = 6},
+     .bitDepth = {.read = Read::Le16, .offset = 8}},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
