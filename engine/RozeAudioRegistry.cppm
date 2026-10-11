@@ -479,6 +479,29 @@ constexpr Layout layouts[]{
      .sampleRate = constant(8000),
      .numChannels = constant(1),
      .bitDepth = constant(0)},
+    // .gsm  no header, frames start with 0xD in the high 4 bits: 8000 Hz mono
+    {.extension = ".gsm",
+     .checks = {{{0, "\xD0", "\xF0"}}},
+     .sampleRate = constant(8000),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    // .sln .vox  no header, telephony convention: 8000 Hz mono
+    {.extension = ".sln",
+     .sampleRate = constant(8000),
+     .numChannels = constant(1),
+     .bitDepth = constant(16)},
+    {.extension = ".vox",
+     .sampleRate = constant(8000),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    // No header at all, or no public specification
+    {.extension = ".raw", .kind = Kind::NoHeader},
+    {.extension = ".dvf", .kind = Kind::Proprietary},
+    {.extension = ".msv", .kind = Kind::Proprietary},
+    {.extension = ".iklax", .kind = Kind::Proprietary},
+    {.extension = ".ivs", .kind = Kind::Proprietary},
+    {.extension = ".nmf", .kind = Kind::Proprietary},
+    {.extension = ".movpkg", .kind = Kind::Proprietary},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
