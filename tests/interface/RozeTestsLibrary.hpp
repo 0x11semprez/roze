@@ -1,17 +1,17 @@
 #pragma once
 
 #include <concepts>
-#include <iostream>
 
 #include "RozeTestsLibraryErrors.hpp"
 
 class RozeTestLibrary {
     public:
-    template <std::equality_comparable T>
+    template <typename T>
+        requires std::equality_comparable<T> && Printable<T>
     [[nodiscard]] static bool assertEq(const T& value, const T& expectedValue)
     {
         if (value != expectedValue) [[unlikely]] {
-            std::cerr << "assertEq failed\n";
+            errorAssertEq(value, expectedValue);
             return false;
         }
         return true;
