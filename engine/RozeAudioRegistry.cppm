@@ -107,6 +107,15 @@ constexpr array<uint32_t, 2> wavPackChannels{2, 1};  // mono flag
 constexpr array<uint32_t, 4> wavPackBits{8, 16, 24, 32};
 constexpr array<uint32_t, 4> musepackRates{44100, 48000, 37800, 32000};
 constexpr array<uint32_t, 8> auBits{0, 0, 8, 16, 24, 32, 32, 64};  // encoding 1 = mu-law
+constexpr array<uint32_t, 5> vocBits{8, 0, 0, 0, 16};              // codec 0 = 8-bit, 4 = 16-bit
+// VOC block 1 stores a divisor: rate = 1000000 / (256 - divisor).
+constexpr array<uint32_t, 256> vocRates = [] {
+    array<uint32_t, 256> rates{};
+    for (uint32_t i = 0; i < 256; ++i) {
+        rates[i] = 1000000 / (256 - i);
+    }
+    return rates;
+}();
 
 constexpr Field constant(uint32_t value)
 {
@@ -433,6 +442,24 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Byte, .offset = 10, .mask = 0x3, .table = musepackRates},
      .numChannels = constant(2),
      .bitDepth = constant(0)},
+    // .qoa  "qoaf" 0: channels 8, rate 9
+    {.extension = ".qoa",
+     .checks = {{{0, "qoaf"}}},
+     .sampleRate = {.read = Read::Be24, .offset = 9},
+     .numChannels = {.read = Read::Byte, .offset = 8},
+     .bitDepth = constant(0)},
+    // .voc  "Creative Voice File" 0, first block at 26: type 1 (divisor 30, codec 31)
+    // or type 9 (rate 30, bits 34, channels 35)
+    {.extension = ".voc",
+     .checks = {{{0, "Creative Voice File\x1A"}, {26, "\x01"}}},
+     .sampleRate = {.read = Read::Byte, .offset = 30, .table = vocRates},
+     .numChannels = constant(1),
+     .bitDepth = {.read = Read::Byte, .offset = 31, .table = vocBits}},
+    {.extension = ".voc",
+     .checks = {{{0, "Creative Voice File\x1A"}, {26, "\x09"}}},
+     .sampleRate = {.read = Read::Le32, .offset = 30},
+     .numChannels = {.read = Read::Byte, .offset = 35},
+     .bitDepth = {.read = Read::Byte, .offset = 34}},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
