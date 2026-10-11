@@ -106,6 +106,7 @@ constexpr array<uint32_t, 15> wavPackRates{6000,  8000,  9600,  11025, 12000, 16
 constexpr array<uint32_t, 2> wavPackChannels{2, 1};  // mono flag
 constexpr array<uint32_t, 4> wavPackBits{8, 16, 24, 32};
 constexpr array<uint32_t, 4> musepackRates{44100, 48000, 37800, 32000};
+constexpr array<uint32_t, 5> smafRates{4000, 8000, 11025, 22050, 44100};
 constexpr array<uint32_t, 8> auBits{0, 0, 8, 16, 24, 32, 32, 64};  // encoding 1 = mu-law
 constexpr array<uint32_t, 5> vocBits{8, 0, 0, 0, 16};              // codec 0 = 8-bit, 4 = 16-bit
 // VOC block 1 stores a divisor: rate = 1000000 / (256 - divisor).
@@ -460,6 +461,24 @@ constexpr Layout layouts[]{
      .sampleRate = {.read = Read::Le32, .offset = 30},
      .numChannels = {.read = Read::Byte, .offset = 35},
      .bitDepth = {.read = Read::Byte, .offset = 34}},
+    // .mmf  "MMMD" 0, chunk "ATR": byte +10 = (channels - 1) << 7 | rate code
+    {.extension = ".mmf",
+     .checks = {{{0, "MMMD"}}},
+     .anchor = "ATR",
+     .sampleRate = {.read = Read::Byte, .offset = 10, .mask = 0xF, .table = smafRates},
+     .numChannels = {.read = Read::Byte, .offset = 10, .shift = 7, .mask = 0x1, .add = 1},
+     .bitDepth = constant(0)},
+    // .dss  "dss" at 1, codec at 0x2A4: 0 = 11025 Hz, 2 = 8000 Hz, mono
+    {.extension = ".dss",
+     .checks = {{{1, "dss"}, {0x2A4, "\x00"sv}}},
+     .sampleRate = constant(11025),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
+    {.extension = ".dss",
+     .checks = {{{1, "dss"}, {0x2A4, "\x02"}}},
+     .sampleRate = constant(8000),
+     .numChannels = constant(1),
+     .bitDepth = constant(0)},
 };
 
 // True when `pattern` is at `at`. With a mask, only the masked bits must match.
