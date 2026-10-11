@@ -2,9 +2,11 @@
 
 #include <iostream>
 
-using namespace std;
+template <typename T>
+concept Printable = requires(std::ostream& os, const T& v) { os << v; };
 
-class RozeTestsLibraryErrors {
-    public:
-    string_view errorAssertEq(const void *value, const void *expectedValue);
-};
+template <Printable T>
+void errorAssertEq(const T& value, const T& expectedValue)
+{
+    std::cerr << "assertEq failed: expected " << expectedValue << ", got " << value << '\n';
+}
