@@ -1,10 +1,12 @@
-#pragma once
+module;
 
 #include <concepts>
 
-#include "RozeTestsLibraryErrors.hpp"
+export module roze.tests;
 
-class RozeTestLibrary {
+export import roze.tests.errors;
+
+export class RozeTestLibrary {
     public:
     template <typename T>
         requires std::equality_comparable<T> && Printable<T>
