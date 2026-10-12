@@ -33,15 +33,12 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     if (const auto reader = formatManager.createReaderFor(std::move(inputStream))) {
         const juce::String name = "f_major";
 
-        int originalMidiNote = 60;
+        // The sample is an F major chord whose root is F2 (MIDI note 41).
+        const int originalMidiNote = 41;
 
-        std::vector<int> midiNoteSet{60, 61, 62, 63, 64, 65, 66, 67};
-
+        // Every key of the keyboard plays the sample, pitched from the root.
         juce::BigInteger midiNotes;
-
-        for (auto note : midiNoteSet) {
-            midiNotes.setBit(note);
-        }
+        midiNotes.setRange(0, 128, true);
 
         [[maybe_unused]] const double attack = 0.0;
         [[maybe_unused]] const double release = 0.1;
