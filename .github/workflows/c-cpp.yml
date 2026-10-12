@@ -7,17 +7,31 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  tests:
+    runs-on: ubuntu-24.04
+    env:
+      CC: gcc-14
+      CXX: g++-14
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build g++-14 ffmpeg python3 \
+          libasound2-dev libfreetype-dev libfontconfig1-dev libx11-dev \
+          libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev \
+          libxrandr-dev libxrender-dev libgl1-mesa-dev
+
+    - name: generate fixtures
+      run: tests/fixtures/generate.sh
+
     - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+      run: cmake -S . -B build -G Ninja
+
+    - name: build tests
+      run: cmake --build build --target rozeTests
+
+    - name: run tests
+      run: ctest --test-dir build --output-on-failure
