@@ -8,10 +8,8 @@
 namespace {
 namespace Colours = RozeColours;
 
-constexpr int headerHeight = 56;
-constexpr int keyboardHeight = 80;
-constexpr int controlsHeight = 110;
-constexpr int margin = 12;
+constexpr int knobWidth = 90;
+constexpr int captionHeight = 20;
 }  // namespace
 
 //==============================================================================
@@ -19,7 +17,8 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
     : AudioProcessorEditor(&p),
       processorRef(p),
       keyboard(p.getKeyboardState(), juce::MidiKeyboardComponent::horizontalKeyboard),
-      noteDisplay(p.getKeyboardState(), lookAndFeel.getSoraFont(12.0f, true))
+      attackAttachment(p.getParameters(), "attack", attackKnob),
+      releaseAttachment(p.getParameters(), "release", releaseKnob)
 {
     setLookAndFeel(&lookAndFeel);
 
@@ -38,26 +37,26 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
     keyboard.setColour(juce::MidiKeyboardComponent::shadowColourId,
                        juce::Colours::transparentBlack);
     addAndMakeVisible(keyboard);
-    addAndMakeVisible(noteDisplay);
 
-    pitchKnob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    pitchKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 18);
+    setupKnob(pitchKnob, pitchLabel, "PITCH");
     pitchKnob.setRange(-24.0, 24.0, 1.0);
     pitchKnob.setValue(0.0, juce::dontSendNotification);
     pitchKnob.setDoubleClickReturnValue(true, 0.0);
     pitchKnob.setTextValueSuffix(" st");
     pitchKnob.getProperties().set(RozeLookAndFeel::bipolarProperty, true);
-    pitchKnob.setWantsKeyboardFocus(false);  // keep QWERTY notes going to the keyboard
-    addAndMakeVisible(pitchKnob);
 
-    pitchLabel.setText("PITCH", juce::dontSendNotification);
-    pitchLabel.setJustificationType(juce::Justification::centred);
-    pitchLabel.setColour(juce::Label::textColourId, Colours::pink);
-    pitchLabel.setFont(juce::FontOptions(13.0f, juce::Font::bold));
-    addAndMakeVisible(pitchLabel);
+    // Range, value and text come from the parameters through the attachments.
+    setupKnob(attackKnob, attackLabel, "ATTACK");
+    setupKnob(releaseKnob, releaseLabel, "RELEASE");
+
+    sampleCaption.setText("SAMPLE", juce::dontSendNotification);
+    sampleCaption.setColour(juce::Label::textColourId, Colours::pink);
+    sampleCaption.setFont(juce::FontOptions(13.0f, juce::Font::bold));
+    sampleCaption.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(sampleCaption);
 
     sampleLabel.setText(p.getSampleName(), juce::dontSendNotification);
-    sampleLabel.setJustificationType(juce::Justification::centredRight);
+    sampleLabel.setJustificationType(juce::Justification::centredLeft);
     sampleLabel.setColour(juce::Label::textColourId, Colours::text);
     sampleLabel.setInterceptsMouseClicks(false, false);
     addAndMakeVisible(sampleLabel);
@@ -79,6 +78,21 @@ AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
     setLookAndFeel(nullptr);
 }
 
+void AudioPluginAudioProcessorEditor::setupKnob(juce::Slider& knob, juce::Label& label,
+                                                const juce::String& name)
+{
+    knob.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    knob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 70, 18);
+    knob.setWantsKeyboardFocus(false);  // keep QWERTY notes going to the keyboard
+    addAndMakeVisible(knob);
+
+    label.setText(name, juce::dontSendNotification);
+    label.setJustificationType(juce::Justification::centred);
+    label.setColour(juce::Label::textColourId, Colours::pink);
+    label.setFont(juce::FontOptions(13.0f, juce::Font::bold));
+    addAndMakeVisible(label);
+}
+
 //==============================================================================
 void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
 {
@@ -92,20 +106,13 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
     g.setColour(Colours::outline);
     g.drawHorizontalLine(headerArea.getBottom(), 0.0f, static_cast<float>(getWidth()));
 
-    // Centre panel, the note display draws on top of it.
-    g.setColour(Colours::panel);
-    g.fillRoundedRectangle(centreArea.toFloat(), 6.0f);
-    g.setColour(Colours::outline);
-    g.drawRoundedRectangle(centreArea.toFloat(), 6.0f, 1.0f);
-
-    if (isDraggingFile) {
-        g.setColour(Colours::pink.withAlpha(0.08f));
-        g.fillRoundedRectangle(centreArea.toFloat(), 6.0f);
-        g.setColour(Colours::pink);
-        g.drawRoundedRectangle(centreArea.toFloat().reduced(1.0f), 6.0f, 2.0f);
-        g.setFont(lookAndFeel.getSoraFont(16.0f, true));
-        g.drawText("drop to load sample", centreArea, juce::Justification::centred);
-    }
+    // Controls panel, also the drop zone highlighted while a file hovers.
+    const auto panel = controlsArea.toFloat();
+    g.setColour(isDraggingFile ? Colours::panel.overlaidWith(Colours::pink.withAlpha(0.08f))
+                               : Colours::panel);
+    g.fillRoundedRectangle(panel, 6.0f);
+    g.setColour(isDraggingFile ? Colours::pink : Colours::outline);
+    g.drawRoundedRectangle(panel.reduced(0.5f), 6.0f, isDraggingFile ? 2.0f : 1.0f);
 }
 
 //==============================================================================
@@ -159,16 +166,23 @@ void AudioPluginAudioProcessorEditor::resized()
     keyboard.setKeyWidth(static_cast<float>(keyboardArea.getWidth()) / 50.0f);
     keyboard.setLowestVisibleKey(24);
 
-    bounds.reduce(scaled(margin), scaled(margin));
+    controlsArea = bounds.reduced(scaled(margin));
 
-    // Controls row under the centre panel: pitch on the left, right side kept for later.
-    auto controlsArea = bounds.removeFromBottom(scaled(controlsHeight));
-    auto pitchArea = controlsArea.removeFromLeft(scaled(90));
-    pitchLabel.setBounds(pitchArea.removeFromTop(scaled(20)));
-    pitchKnob.setBounds(pitchArea);
-    sampleLabel.setBounds(controlsArea.removeFromTop(scaled(20)));
-    sampleLabel.setFont(lookAndFeel.getSoraFont(13.0f * scale));
+    // Knobs on the left, sample name in the space left on the right.
+    auto inner = controlsArea.reduced(scaled(margin), scaled(margin) / 2);
+    const auto placeKnob = [&](juce::Slider& knob, juce::Label& label) {
+        auto column = inner.removeFromLeft(scaled(knobWidth));
+        label.setBounds(column.removeFromTop(scaled(captionHeight)));
+        label.setFont(lookAndFeel.getSoraFont(13.0f * scale, true));
+        knob.setBounds(column);
+    };
+    placeKnob(pitchKnob, pitchLabel);
+    placeKnob(attackKnob, attackLabel);
+    placeKnob(releaseKnob, releaseLabel);
 
-    centreArea = bounds.withTrimmedBottom(scaled(margin));
-    noteDisplay.setBounds(centreArea.reduced(scaled(margin)));
+    inner.removeFromLeft(scaled(margin * 2));
+    sampleCaption.setBounds(inner.removeFromTop(scaled(captionHeight)));
+    sampleCaption.setFont(lookAndFeel.getSoraFont(13.0f * scale, true));
+    sampleLabel.setBounds(inner.withSizeKeepingCentre(inner.getWidth(), scaled(40)));
+    sampleLabel.setFont(lookAndFeel.getSoraFont(18.0f * scale));
 }

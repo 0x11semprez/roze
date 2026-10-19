@@ -32,9 +32,7 @@ target_sources(roze PRIVATE
     src/PluginProcessor.cpp
     src/interface/PluginProcessor.hpp
     src/RozeLookAndFeel.cpp
-    src/interface/RozeLookAndFeel.hpp
-    src/NoteDisplay.cpp
-    src/interface/NoteDisplay.hpp)
+    src/interface/RozeLookAndFeel.hpp)
 
 # Engine and tests use C++20 modules: CMake only supports them with Ninja (not Unix Makefiles).
 if(NOT CMAKE_GENERATOR MATCHES "Ninja|Visual Studio")
