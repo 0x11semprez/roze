@@ -7,7 +7,8 @@
 #include "RozeLookAndFeel.hpp"
 
 //==============================================================================
-class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor {
+class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor,
+                                              public juce::FileDragAndDropTarget {
     public:
     explicit AudioPluginAudioProcessorEditor(AudioPluginAudioProcessor&);
     ~AudioPluginAudioProcessorEditor() override;
@@ -15,6 +16,12 @@ class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor 
     //==============================================================================
     void paint(juce::Graphics&) override;
     void resized() override;
+
+    // Drop one audio file anywhere on the editor to load it as the sample.
+    bool isInterestedInFileDrag(const juce::StringArray& files) override;
+    void fileDragEnter(const juce::StringArray& files, int x, int y) override;
+    void fileDragExit(const juce::StringArray& files) override;
+    void filesDropped(const juce::StringArray& files, int x, int y) override;
 
     // Base (unscaled) editor size.
     static constexpr int baseWidth = 820;
@@ -37,6 +44,10 @@ class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor 
     // Pitch in semitones. UI only for now, not connected to the processor yet.
     juce::Slider pitchKnob;
     juce::Label pitchLabel;
+
+    // Name of the loaded sample, or the roze error message after a bad drop.
+    juce::Label sampleLabel;
+    bool isDraggingFile = false;
 
     juce::Rectangle<int> headerArea;
     juce::Rectangle<int> centreArea;

@@ -56,6 +56,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(AudioPluginAudi
     pitchLabel.setFont(juce::FontOptions(13.0f, juce::Font::bold));
     addAndMakeVisible(pitchLabel);
 
+    sampleLabel.setText(p.getSampleName(), juce::dontSendNotification);
+    sampleLabel.setJustificationType(juce::Justification::centredRight);
+    sampleLabel.setColour(juce::Label::textColourId, Colours::text);
+    sampleLabel.setInterceptsMouseClicks(false, false);
+    addAndMakeVisible(sampleLabel);
+
     setResizable(true, true);
     setResizeLimits(baseWidth * 3 / 4, baseHeight * 3 / 4, baseWidth * 2, baseHeight * 2);
     getConstrainer()->setFixedAspectRatio(static_cast<double>(baseWidth) / baseHeight);
@@ -91,6 +97,52 @@ void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g)
     g.fillRoundedRectangle(centreArea.toFloat(), 6.0f);
     g.setColour(Colours::outline);
     g.drawRoundedRectangle(centreArea.toFloat(), 6.0f, 1.0f);
+
+    if (isDraggingFile) {
+        g.setColour(Colours::pink.withAlpha(0.08f));
+        g.fillRoundedRectangle(centreArea.toFloat(), 6.0f);
+        g.setColour(Colours::pink);
+        g.drawRoundedRectangle(centreArea.toFloat().reduced(1.0f), 6.0f, 2.0f);
+        g.setFont(lookAndFeel.getSoraFont(16.0f, true));
+        g.drawText("drop to load sample", centreArea, juce::Justification::centred);
+    }
+}
+
+//==============================================================================
+bool AudioPluginAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files)
+{
+    // Any single file: loadSample tells the user why roze refuses it.
+    return files.size() == 1;
+}
+
+void AudioPluginAudioProcessorEditor::fileDragEnter(const juce::StringArray&, int, int)
+{
+    isDraggingFile = true;
+    repaint();
+}
+
+void AudioPluginAudioProcessorEditor::fileDragExit(const juce::StringArray&)
+{
+    isDraggingFile = false;
+    repaint();
+}
+
+void AudioPluginAudioProcessorEditor::filesDropped(const juce::StringArray& files, int, int)
+{
+    isDraggingFile = false;
+    repaint();
+
+    const auto error = processorRef.loadSample(juce::File(files[0]));
+    if (error.isEmpty()) {
+        sampleLabel.setColour(juce::Label::textColourId, Colours::text);
+        sampleLabel.setText(processorRef.getSampleName(), juce::dontSendNotification);
+    } else {
+        sampleLabel.setColour(juce::Label::textColourId, Colours::pink);
+        sampleLabel.setText(error, juce::dontSendNotification);
+    }
+
+    // The drop takes focus away, give it back so QWERTY keys play notes again.
+    keyboard.grabKeyboardFocus();
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -114,6 +166,8 @@ void AudioPluginAudioProcessorEditor::resized()
     auto pitchArea = controlsArea.removeFromLeft(scaled(90));
     pitchLabel.setBounds(pitchArea.removeFromTop(scaled(20)));
     pitchKnob.setBounds(pitchArea);
+    sampleLabel.setBounds(controlsArea.removeFromTop(scaled(20)));
+    sampleLabel.setFont(lookAndFeel.getSoraFont(13.0f * scale));
 
     centreArea = bounds.withTrimmedBottom(scaled(margin));
     noteDisplay.setBounds(centreArea.reduced(scaled(margin)));
