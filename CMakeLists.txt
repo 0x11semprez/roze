@@ -34,10 +34,6 @@ target_sources(roze PRIVATE
     src/RozeLookAndFeel.cpp
     src/interface/RozeLookAndFeel.hpp)
 
-# Engine and tests use C++20 modules: CMake only supports them with Ninja (not Unix Makefiles).
-if(NOT CMAKE_GENERATOR MATCHES "Ninja|Visual Studio")
-    message(FATAL_ERROR "roze uses C++20 modules, configure with -G Ninja")
-endif()
 add_library(rozeEngine STATIC)
 target_compile_features(rozeEngine PUBLIC cxx_std_20)
 # The VST3 plugin is a shared object, so the engine linked into it must be position independent.

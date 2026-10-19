@@ -66,8 +66,8 @@ void RozeLookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int widt
     const auto hi = juce::jmax(fillFrom, angle);
 
     for (int i = 0; i < numDots; ++i) {
-        const auto a = rotaryStartAngle + static_cast<float>(i) / (numDots - 1) *
-                                              (rotaryEndAngle - rotaryStartAngle);
+        const auto a = rotaryStartAngle +
+                       static_cast<float>(i) / (numDots - 1) * (rotaryEndAngle - rotaryStartAngle);
         const auto lit = a >= lo - 0.001f && a <= hi + 0.001f;
         g.setColour(lit ? RozeColours::pink : RozeColours::outline);
         g.fillEllipse(juce::Rectangle<float>(4.0f, 4.0f).withCentre(pointOnCircle(dotRadius, a)));
