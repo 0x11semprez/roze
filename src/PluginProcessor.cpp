@@ -21,8 +21,12 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 #endif
                          .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      )
+                         ),
+      parameters(*this, nullptr, "roze", createParameterLayout())
 {
+    attackParam = parameters.getRawParameterValue("attack");
+    releaseParam = parameters.getRawParameterValue("release");
+
     formatManager.registerBasicFormats();
 
     for (int i = 0; i < numVoices; ++i) {
@@ -39,6 +43,25 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     }
 }
 
+juce::AudioProcessorValueTreeState::ParameterLayout
+AudioPluginAudioProcessor::createParameterLayout()
+{
+    // Times in seconds, skewed so the short times get most of the knob travel.
+    const juce::NormalisableRange<float> timeRange(0.0f, 5.0f, 0.001f, 0.3f);
+    const auto timeText = [](float seconds, int) {
+        return seconds < 1.0f ? juce::String(juce::roundToInt(seconds * 1000.0f)) + " ms"
+                              : juce::String(seconds, 2) + " s";
+    };
+    const auto attributes = juce::AudioParameterFloatAttributes().withStringFromValueFunction(timeText);
+
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"attack", 1}, "Attack",
+                                                           timeRange, 0.0f, attributes));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"release", 1},
+                                                           "Release", timeRange, 0.1f, attributes));
+    return layout;
+}
+
 void AudioPluginAudioProcessor::setSound(const juce::String& name, juce::AudioFormatReader& reader,
                                          int originalMidiNote)
 {
@@ -46,8 +69,8 @@ void AudioPluginAudioProcessor::setSound(const juce::String& name, juce::AudioFo
     juce::BigInteger midiNotes;
     midiNotes.setRange(0, 128, true);
 
-    const double attack = 0.0;
-    const double release = 0.1;
+    const double attack = attackParam->load();
+    const double release = releaseParam->load();
     const double sampleLength = 10.0;
 
     sampleName = name;
@@ -208,10 +231,19 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
         // ..do something to the data...
     }
 
+    updateEnvelope();
+
     // Merge notes played on the editor keyboard (mouse / QWERTY) into the host MIDI.
     keyboardState.processNextMidiBuffer(midiMessages, 0, buffer.getNumSamples(), true);
 
     synth.renderNextBlock(buffer, midiMessages, 0, buffer.getNumSamples());
+}
+
+void AudioPluginAudioProcessor::updateEnvelope()
+{
+    // A voice reads the envelope when its note starts, so new values apply to the next notes.
+    const juce::ADSR::Parameters envelope{attackParam->load(), 0.0f, 1.0f, releaseParam->load()};
+    synth.setEnvelope(envelope);
 }
 
 //==============================================================================
@@ -228,18 +260,18 @@ juce::AudioProcessorEditor* AudioPluginAudioProcessor::createEditor()
 //==============================================================================
 void AudioPluginAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-    juce::ignoreUnused(destData);
+    if (const auto xml = parameters.copyState().createXml()) {
+        copyXmlToBinary(*xml, destData);
+    }
 }
 
 void AudioPluginAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory
-    // block, whose contents will have been created by the getStateInformation()
-    // call.
-    juce::ignoreUnused(data, sizeInBytes);
+    if (const auto xml = getXmlFromBinary(data, sizeInBytes)) {
+        if (xml->hasTagName(parameters.state.getType())) {
+            parameters.replaceState(juce::ValueTree::fromXml(*xml));
+        }
+    }
 }
 
 //==============================================================================
