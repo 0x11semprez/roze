@@ -42,6 +42,8 @@ if(NOT CMAKE_GENERATOR MATCHES "Ninja|Visual Studio")
 endif()
 add_library(rozeEngine STATIC)
 target_compile_features(rozeEngine PUBLIC cxx_std_20)
+# The VST3 plugin is a shared object, so the engine linked into it must be position independent.
+set_target_properties(rozeEngine PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_sources(rozeEngine PUBLIC FILE_SET CXX_MODULES FILES
     engine/AudioFileErrors.cppm
     engine/AudioFile.cppm
@@ -57,6 +59,9 @@ target_compile_definitions(rozeTests PRIVATE
     ROZE_SAMPLE_DIR="${CMAKE_SOURCE_DIR}/sample"
     ROZE_FIXTURES_DIR="${CMAKE_SOURCE_DIR}/tests/fixtures")
 target_link_libraries(rozeTests PRIVATE rozeEngine)
+
+# Only the plugin files that import roze modules get scanned, JUCE sources stay unscanned.
+set_source_files_properties(src/PluginProcessor.cpp PROPERTIES CXX_SCAN_FOR_MODULES ON)
 add_test(NAME rozeTests COMMAND rozeTests)
 
 target_compile_definitions(roze PUBLIC
