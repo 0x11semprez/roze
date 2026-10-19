@@ -43,15 +43,28 @@ class AudioPluginAudioProcessor final : public juce::AudioProcessor {
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    void loadSample(const juce::File& file);
+    // Checks the file header with the roze engine, then loads it as the sampler sound.
+    // Returns an empty string on success, else the roze error message.
+    [[nodiscard]] juce::String loadSample(const juce::File& file, int originalMidiNote = 60);
 
-    juce::MidiKeyboardState& getKeyboardState() noexcept { return keyboardState; }
+    juce::MidiKeyboardState& getKeyboardState() noexcept
+    {
+        return keyboardState;
+    }
+
+    const juce::String& getSampleName() const noexcept
+    {
+        return sampleName;
+    }
 
     private:
+    void setSound(const juce::String& name, juce::AudioFormatReader& reader, int originalMidiNote);
+
     static constexpr auto numVoices = 8;
     juce::Synthesiser synth;
     juce::AudioFormatManager formatManager;
     juce::MidiKeyboardState keyboardState;
+    juce::String sampleName;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)

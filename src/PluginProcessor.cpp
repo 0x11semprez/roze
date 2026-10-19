@@ -10,6 +10,8 @@
 #include "juce_core/juce_core.h"
 #include "juce_graphics/juce_graphics.h"
 
+import roze.audiofile;
+
 //==============================================================================
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     : AudioProcessor(BusesProperties()
@@ -30,25 +32,47 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
     auto inputStream = std::make_unique<juce::MemoryInputStream>(
         BinaryData::f_major_wav, BinaryData::f_major_wavSize, false);
 
-    if (const auto reader = formatManager.createReaderFor(std::move(inputStream))) {
-        const juce::String name = "f_major";
-
+    if (const auto reader = std::unique_ptr<juce::AudioFormatReader>(
+            formatManager.createReaderFor(std::move(inputStream)))) {
         // The sample is an F major chord whose root is F2 (MIDI note 41).
-        const int originalMidiNote = 41;
+        setSound("f_major", *reader, 41);
+    }
+}
 
-        // Every key of the keyboard plays the sample, pitched from the root.
-        juce::BigInteger midiNotes;
-        midiNotes.setRange(0, 128, true);
+void AudioPluginAudioProcessor::setSound(const juce::String& name, juce::AudioFormatReader& reader,
+                                         int originalMidiNote)
+{
+    // Every key of the keyboard plays the sample, pitched from the root.
+    juce::BigInteger midiNotes;
+    midiNotes.setRange(0, 128, true);
 
-        [[maybe_unused]] const double attack = 0.0;
-        [[maybe_unused]] const double release = 0.1;
-        [[maybe_unused]] const double sampleLength = 10.0;
+    const double attack = 0.0;
+    const double release = 0.1;
+    const double sampleLength = 10.0;
 
-        auto sound = new juce::SamplerSound(name, *reader, midiNotes, originalMidiNote, attack,
-                                            release, sampleLength);
+    sampleName = name;
+    synth.clearSounds();
+    synth.addSound(new juce::SamplerSound(name, reader, midiNotes, originalMidiNote, attack,
+                                          release, sampleLength));
+}
 
-        synth.addSound(sound);
-    };
+juce::String AudioPluginAudioProcessor::loadSample(const juce::File& file, int originalMidiNote)
+{
+    // roze reads the header first, so a bad file gets a roze error message.
+    const auto path = file.getFullPathName().toStdString();
+    AudioFile audioFile{path};
+    if (const auto error = audioFile.load(path)) {
+        return juce::String(std::string(errorMessage(*error)));
+    }
+
+    const auto reader =
+        std::unique_ptr<juce::AudioFormatReader>(formatManager.createReaderFor(file));
+    if (reader == nullptr) {
+        return juce::String(std::string(errorMessage(AudioFileErrors::UnsupportedFormat)));
+    }
+
+    setSound(file.getFileNameWithoutExtension(), *reader, originalMidiNote);
+    return {};
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {}
